@@ -1,0 +1,10 @@
+# misc os files
+.DS_Store
+
+# Go debugging
+.profiles
+
+# If the binary gets built during dev, don't commit it.
+/metamorph
+/metamorph.exe
+bin/*
