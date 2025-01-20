@@ -24,7 +24,7 @@ func TestIsSubFolder(t *testing.T) {
 		{"Child and sibling", "/parent/child", "/parent/childsibling", false},
 	}
 
-	fixtureRoot := "../test/fixtures/util"
+	fixtureRoot := "testdata"
 
 	for _, testCase := range testCases {
 		// The following is necessary to make sure testCase's values don't
