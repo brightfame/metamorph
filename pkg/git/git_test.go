@@ -1,7 +1,11 @@
 package git
 
 import (
+	"os"
 	"testing"
+
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
 func TestGitOperations(t *testing.T) {
@@ -15,6 +19,10 @@ func TestGitOperations(t *testing.T) {
 			input: CloneOptions{
 				URL:    "https://github.com/brightfame/metamorph-automated-tests",
 				Branch: "",
+				Auth: &http.BasicAuth{
+					Username: "metamorph",
+					Password: os.Getenv("GITHUB_OAUTH_TOKEN"),
+				},
 			},
 			expectedError: false,
 		},
@@ -23,6 +31,7 @@ func TestGitOperations(t *testing.T) {
 			input: CloneOptions{
 				URL:    "git@github.com:brightfame/metamorph-automated-tests.git",
 				Branch: "",
+				Auth:   sshAgentAuth(),
 			},
 			expectedError: false,
 		},
@@ -31,6 +40,10 @@ func TestGitOperations(t *testing.T) {
 			input: CloneOptions{
 				URL:    "https://github.com/brightfame/metamorph-automated-tests",
 				Branch: "branch-test",
+				Auth: &http.BasicAuth{
+					Username: "metamorph",
+					Password: os.Getenv("GITHUB_OAUTH_TOKEN"),
+				},
 			},
 			expectedError: false,
 		},
@@ -39,6 +52,7 @@ func TestGitOperations(t *testing.T) {
 			input: CloneOptions{
 				URL:    "git@github.com:brightfame/metamorph-automated-tests.git",
 				Branch: "branch-test",
+				Auth:   sshAgentAuth(),
 			},
 			expectedError: false,
 		},
@@ -58,4 +72,13 @@ func TestGitOperations(t *testing.T) {
 			}
 		})
 	}
+}
+
+func sshAgentAuth() *ssh.PublicKeysCallback {
+	auth, err := ssh.NewSSHAgentAuth("git")
+	if err != nil {
+		panic(err)
+	}
+
+	return auth
 }

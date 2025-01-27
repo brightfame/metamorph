@@ -5,14 +5,14 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 )
 
 type CloneOptions struct {
 	URL         string
 	Branch      string
 	Destination string
-	Auth        *http.BasicAuth
+	Auth        transport.AuthMethod
 }
 
 func Clone(opts CloneOptions) error {
