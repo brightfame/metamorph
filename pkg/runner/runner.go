@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -14,7 +15,9 @@ import (
 	"github.com/brightfame/metamorph/internal/config"
 	"github.com/brightfame/metamorph/internal/fileutil"
 	"github.com/brightfame/metamorph/pkg/container"
+	"github.com/brightfame/metamorph/pkg/git"
 	"github.com/brightfame/metamorph/pkg/pipeline"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
 // Runner executes a pipeline of tasks
@@ -64,9 +67,9 @@ func (r *Runner) Run(ctx context.Context) ([]Result, error) {
 	results := make([]Result, 0, len(r.p.Steps))
 
 	// execute the pipeline for each repo
-	for _, repo := range r.p.Repos {
-		repoLogger := r.cfg.Logger.With("repo", repo.Name)
-		repoLogger.Info("Starting pipeline execution for %s", repo.Name)
+	for _, repo := range r.cfg.Repos {
+		repoLogger := r.cfg.Logger.With("repo", repo)
+		repoLogger.Info("Starting pipeline execution for %s", repo)
 
 		for i, step := range r.p.Steps {
 			stepLogger := repoLogger.With("step", step.Name, "step_number", i+1)
@@ -100,7 +103,7 @@ func (r *Runner) Run(ctx context.Context) ([]Result, error) {
 	return results, nil
 }
 
-func (r *Runner) executeStepImpl(ctx context.Context, repo pipeline.Repo, step pipeline.Step, logger *zap.SugaredLogger) (Result, error) {
+func (r *Runner) executeStepImpl(ctx context.Context, repoName string, step pipeline.Step, logger *zap.SugaredLogger) (Result, error) {
 	image := container.ParseDockerImage(step.Image)
 
 	// ensure the container image exists and pull it if necessary
@@ -139,8 +142,27 @@ func (r *Runner) executeStepImpl(ctx context.Context, repo pipeline.Repo, step p
 		})
 	}
 
+	// clone the repo
+	repoDestPath := os.TempDir()
+	repoUrlFormatted := fmt.Sprintf("https://%s.com/%s/%s.git", r.cfg.Platform, r.cfg.PlatformOrg, repoName)
+	cloneOpts := git.CloneOptions{
+		URL:         repoUrlFormatted,
+		Branch:      "",
+		Destination: repoDestPath,
+		Auth: &http.BasicAuth{
+			Username: r.cfg.PlatformAuthConfig.Username,
+			Password: r.cfg.PlatformAuthConfig.Password,
+		},
+	}
+
+	r.cfg.Logger.Infof("Cloning repo %s", repoUrlFormatted)
+	err = git.Clone(cloneOpts)
+	if err != nil {
+		return Result{}, err
+	}
+
 	// explicitly add a mount for the repo root
-	repoRootPath := fileutil.RepoRootPath(repo.Path, logger)
+	repoRootPath := fileutil.RepoRootPath(repoDestPath, logger)
 	mounts = append(mounts, container.Mount{
 		Source: repoRootPath,
 		Target: r.cfg.DefaultContainerRepoPath,
