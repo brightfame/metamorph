@@ -143,7 +143,10 @@ func (r *Runner) executeStepImpl(ctx context.Context, repoName string, step pipe
 	}
 
 	// clone the repo
-	repoDestPath := os.TempDir()
+	repoDestPath, err := os.MkdirTemp("", "metamorph-")
+	if err != nil {
+		return Result{}, err
+	}
 	repoUrlFormatted := fmt.Sprintf("https://%s.com/%s/%s.git", r.cfg.Platform, r.cfg.PlatformOrg, repoName)
 	cloneOpts := git.CloneOptions{
 		URL:         repoUrlFormatted,
