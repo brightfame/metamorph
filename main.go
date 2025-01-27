@@ -15,19 +15,29 @@ var (
 	verbose bool
 	rootCmd = &cobra.Command{
 		Use:   "metamorph",
-		Short: "MetaMorph is a dependency updater tool",
-		Long:  `MetaMorph is a CLI app for keeping dependencies up to date, even with backwards incompatible changes.`,
+		Short: "MetaMorph is a tool for bulk repo updates",
+		Long:  `MetaMorph is a CLI app for updating multiple repositories with a single command.`,
 	}
 
 	applyCmd = &cobra.Command{
-		Use:   "apply [patch.sh]",
-		Short: "Apply a patch to the specified repository",
+		Use:   "apply [manifest]",
+		Short: "Apply a manifest to the specified repository",
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// initialize the config
 			cfg, err := config.DefaultConfig()
 			if err != nil {
 				return err
+			}
+
+			// check for the GitLab org
+			gitlabOrg, err := cmd.Flags().GetString("gitlab-org")
+			if err != nil {
+				return fmt.Errorf("error getting GitLab org: %w", err)
+			}
+			if len(gitlabOrg) > 0 {
+				cfg.Platform = "gitlab"
+				cfg.PlatformOrg = gitlabOrg
 			}
 
 			// check for GitLab CI username from GITLAB_CI_USERNAME
@@ -52,21 +62,12 @@ var (
 				return err
 			}
 
-			// create a basic pipeline with a single step and execute it
-			//
-			// p := pipeline.New(cfg, "apply")
-			// p.AddStep(pipeline.Step{
-			// 	Name:     "apply",
-			// 	Image:    "golangci/golangci-lint:latest",
-			// 	Commands: args,
-			// 	Env:      map[string]string{"GOOS": "linux"},
-			// 	WorkDir:  "/work",
-			// })
-
-			// // validate the pipeline
-			// if err = p.Validate(); err != nil {
-			// 	return err
-			// }
+			// get the repos from the command line flags
+			repos, err := cmd.Flags().GetStringArray("repo")
+			if err != nil {
+				return fmt.Errorf("error getting repos: %w", err)
+			}
+			cfg.Repos = repos
 
 			// create a new runner instance and execute the pipeline
 			runner := runner.New(cfg, p)
@@ -115,8 +116,10 @@ func init() {
 	// Apply-specific flags
 	applyCmd.Flags().Bool("dry-run", false, "show what would be updated without making changes")
 	applyCmd.Flags().String("manifest", "", "path to the manifest file")
+	applyCmd.Flags().StringArrayP("repo", "r", []string{}, "repository to operate on (can be specified multiple times)")
 	applyCmd.Flags().StringP("branch", "b", "", "branch to use for applying changes")
 	applyCmd.Flags().StringP("commit-msg", "m", "", "commit message to use for the commit")
+	applyCmd.Flags().String("gitlab-org", "", "GitLab organization to use")
 
 	// Check command flags
 	checkCmd.Flags().String("format", "text", "output format (text, json)")

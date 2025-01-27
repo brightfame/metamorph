@@ -7,7 +7,7 @@ import (
 )
 
 // OpenRepo returns a git.Repository object for the given repoPath.
-func GetRepo(repoPath string, tempDir string) (*git.Repository, error) {
+func OpenRepo(repoPath string, tempDir string) (*git.Repository, error) {
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open local repo: %s", err)

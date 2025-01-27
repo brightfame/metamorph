@@ -13,18 +13,13 @@ gitlab:
   labels:
     - automated-pr
     - dependency
-repos:
-  - name: critical-updates
-    path: backend/critical-updates
-  #- name: es-indexer
-  #  path: backend/es-indexer
 steps:
   - name: clean
-    image: "registry.gitlab.com/${GITLAB_ORG}"/docker-images/alpine-node22:latest"
+    image: "registry.gitlab.com/${GITLAB_ORG}/docker-images/alpine-node22:latest"
     command: rm -rf node_modules/
     #command: ls
   - name: upgrade-yarn-pkg-@types/node
-    image: "registry.gitlab.com/${GITLAB_ORG}"/docker-images/alpine-node22:latest"
+    image: "registry.gitlab.com/${GITLAB_ORG}/docker-images/alpine-node22:latest"
     volumes:
       - ./metamorph/scripts:/scripts
     command: /scripts/upgrade-yarn-pkg "@types/node" "^22.10.5"
@@ -33,7 +28,7 @@ steps:
       DEBUG: "true"
       NPM_AUTH: "${NPM_AUTH}"
   - name: upgrade-yarn-pkg-@types/amqplib
-    image: "registry.gitlab.com/${GITLAB_ORG}"/docker-images/alpine-node22:latest"
+    image: "registry.gitlab.com/${GITLAB_ORG}/docker-images/alpine-node22:latest"
     volumes:
       - ./metamorph/scripts:/scripts
     command: /scripts/upgrade-yarn-pkg @types/amqplib ^0.10.5

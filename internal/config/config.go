@@ -16,8 +16,11 @@ type Config struct {
 	WorkingDir string
 	// DefaultContainerRepoPath is the path inside the container to mount the repository.
 	DefaultContainerRepoPath string
+	// Repos is a list of repositories to work with.
+	Repos []string `yaml:"repos"`
 	// Platform is the SCM platform you are working with.
 	Platform           string             `yaml:"platform,omitempty"`
+	PlatformOrg        string             `yaml:"platform_org,omitempty"`
 	PlatformAuthConfig PlatformAuthConfig `yaml:"platform_auth_config,omitempty"`
 	// ContainerRuntime is the container runtime to use.
 	ContainerRuntime string `yaml:"container_runtime,omitempty"`

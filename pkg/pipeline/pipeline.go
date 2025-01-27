@@ -16,8 +16,7 @@ type Pipeline struct {
 	Assignees []string `yaml:"assignees,omitempty"`
 	Reviewers []string `yaml:"reviewers,omitempty"`
 	GitLab    GitLab   `yaml:"gitlab,omitempty"`
-	Repos     []Repo   `yaml:"repos"`
-	Steps     []Step   `json:"steps"`
+	Steps     []Step   `yaml:"steps"`
 	cfg       *config.Config
 }
 
@@ -27,11 +26,6 @@ type GitLab struct {
 	MergeRequestTitle       string   `yaml:"merge_request_title"`
 	MergeRequestDescription string   `yaml:"merge_request_description"`
 	Labels                  []string `yaml:"labels"`
-}
-
-type Repo struct {
-	Name string `yaml:"name"`
-	Path string `yaml:"path"`
 }
 
 type Step struct {
@@ -70,23 +64,47 @@ func New(cfg *config.Config, name string) *Pipeline {
 func LoadManifestFile(cfg *config.Config, path string) (*Pipeline, error) {
 	p := &Pipeline{}
 	p.cfg = cfg
-	err := parseFile(p, path)
+
+	// read the file
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// expand vars
+	vars := map[string]string{
+		"GITLAB_ORG": cfg.PlatformOrg,
+	}
+	expanded := expandEnvVars(data, vars)
+	err = parseFile(p, expanded)
 	if err != nil {
 		return nil, err
 	}
 	return p, nil
 }
 
-func parseFile(p *Pipeline, path string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
+func expandEnvVars(data []byte, vars map[string]string) string {
+	expanded := os.Expand(string(data), func(key string) string {
+		if val, ok := vars[key]; ok {
+			return val
+		}
+		return os.Getenv(key)
+	})
+	return expanded
+}
 
-	defer f.Close() // nolint: errcheck
-	if err := yaml.NewDecoder(f).Decode(p); err != nil {
+func parseFile(p *Pipeline, data string) error {
+	// parse the yaml file
+	err := yaml.Unmarshal([]byte(data), p)
+	if err != nil {
 		return fmt.Errorf("decode config: %w", err)
 	}
+	//return cfg, err
+
+	// parse the yaml file
+	// if err := yaml.NewDecoder(f).Decode(p); err != nil {
+	// 	return fmt.Errorf("decode config: %w", err)
+	// }
 
 	// we map the command in each step to a slice of strings
 	// so that we can pass it to the container executor
