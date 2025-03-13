@@ -1,6 +1,7 @@
 module github.com/brightfame/metamorph
 
-go 1.23
+go 1.24
+
 require (
 	github.com/docker/cli v27.4.0-rc.2+incompatible
 	github.com/docker/docker v27.5.0+incompatible

@@ -56,7 +56,7 @@ var (
 				return fmt.Errorf("no manifest file provided")
 			}
 
-			// load the manifest file
+			// load the manifest file into a pipeline
 			p, err := pipeline.LoadManifestFile(cfg, manifestFile)
 			if err != nil {
 				return err
