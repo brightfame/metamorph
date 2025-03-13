@@ -6,7 +6,7 @@ FCL-1.0-ALv2
 
 ## Notice
 
-Copyright 2025-present Brightfame
+Copyright 2024-present Brightfame
 
 ## Terms and Conditions
 
