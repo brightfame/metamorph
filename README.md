@@ -1,8 +1,16 @@
-<div align="center">
-<h1 align="center">
-<img src="docs/metamorph_logo.png" width="600" />
+<h1>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/23a9e179-93cb-418a-928b-33c8c1274e4f" alt="MetaMorph Logo" width="128">
+  <br>MetaMorph
 </h1>
-<h3>Transform many Git repos by running commands in containers.</h3>
-</div>
+  <p align="center">
+    <strong>✨ Batch changes powered by AI.</strong>
+  </p>
+</p>
 
-:warning: This project is still under heavy development.
+## About
+
+Make batch changes across multiple Git repositories harnessing the power of AI.
+
+> [!WARNING]
+> This project is still in heavy development!
