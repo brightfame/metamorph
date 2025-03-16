@@ -4,7 +4,7 @@
   <br>MetaMorph
 </h1>
   <p align="center">
-    <strong>✨ Batch changes powered by AI.</strong>
+    <strong>Batch changes with a sprinkle of AI ✨.</strong>
   </p>
 </p>
 
