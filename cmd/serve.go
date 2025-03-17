@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 )
 
@@ -16,11 +16,16 @@ var serveCmd = &cobra.Command{
 		port := "8080"
 		fmt.Printf("Starting server on port %s...\n", port)
 
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, "Welcome to the server!")
+		// Create a default gin router
+		r := gin.Default()
+
+		// Define routes
+		r.GET("/", func(c *gin.Context) {
+			c.String(200, "Welcome to the server!")
 		})
 
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
+		// Start the server
+		if err := r.Run(":" + port); err != nil {
 			log.Fatal(err)
 		}
 	},
