@@ -8,3 +8,7 @@
 /metamorph
 /metamorph.exe
 bin/*
+
+# node
+node_modules
+

@@ -2,7 +2,9 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 
 	"github.com/brightfame/metamorph/pkg/logging"
@@ -24,6 +26,17 @@ type Config struct {
 	PlatformAuthConfig PlatformAuthConfig `yaml:"platform_auth_config,omitempty"`
 	// ContainerRuntime is the container runtime to use.
 	ContainerRuntime string `yaml:"container_runtime,omitempty"`
+
+	// Server configuration
+	ServerAddress string
+
+	// Database configuration
+	DatabaseURL string
+
+	// Execution engine configuration
+	TempDir  string
+	AIAPIKey string
+	AIAPIURL string
 }
 
 // PlatformAuthConfig is the authentication configuration for the SCM platform.
@@ -59,11 +72,37 @@ func DefaultConfig() (*Config, error) {
 			Password: "",
 		},
 		ContainerRuntime: "docker",
+		DatabaseURL:      "",
 	}, nil
+}
+
+func Load() (*Config, error) {
+	// Load .env file if it exists
+	_ = godotenv.Load()
+
+	config := &Config{
+		ServerAddress: getEnv("SERVER_ADDRESS", ":8080"),
+		DatabaseURL:   getEnv("DATABASE_URL", "postgresql://localhost/metamorph?sslmode=disable"),
+		TempDir:       getEnv("TEMP_DIR", filepath.Join(os.TempDir(), "metamorph")),
+		AIAPIKey:      getEnv("AI_API_KEY", ""),
+		AIAPIURL:      getEnv("AI_API_URL", "https://api.openai.com/v1"),
+		GitHubToken:   getEnv("GITHUB_TOKEN", ""),
+	}
+
+	return config, nil
 }
 
 // Validate validates the configuration.
 // It updates the configuration with absolute paths.
 func (c *Config) Validate() error {
 	return nil
+}
+
+// getEnv gets an environment variable or returns a default value
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }
